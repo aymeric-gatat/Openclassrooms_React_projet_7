@@ -3,6 +3,7 @@ import { recipes } from "../data/recipes.js";
 const cardsContainer = document.querySelector("main section .cards-container");
 
 function generateCards(data) {
+  let total = 0;
   data.forEach((recette) => {
     //** Card **//
     const card = document.createElement("li");
@@ -76,7 +77,14 @@ function generateCards(data) {
     //Ingredient
     ingredientContainer.appendChild(sousTitreIngredient);
     ingredientContainer.appendChild(listIngredient);
-    //Liste
+    // Total
+    total++;
+    const totalDisplay = document.querySelector(".total");
+    if (total <= 1) {
+      totalDisplay.innerText = `${total} recette`;
+    } else {
+      totalDisplay.innerText = `${total} recettes`;
+    }
   });
 }
 

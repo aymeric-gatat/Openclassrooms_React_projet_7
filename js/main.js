@@ -65,11 +65,14 @@ function filteredRecipes(recipes, input) {
 function createCard(recipes) {
   for (let i = 0; i < recipes.length; i++) {
     const recette = recipes[i];
-    // Card
+    //** Card **//
     const card = document.createElement("li");
+    card.className = "card";
+    card.setAttribute("tabindex", 0);
+    // Image
     const cardImage = document.createElement("img");
     cardImage.setAttribute("alt", recette.name);
-    cardImage.src = recette.image;
+    cardImage.src = `../assets/recette/${recette.image}`;
     // appendChild
     card.appendChild(cardImage);
     cardContainer.appendChild(card);

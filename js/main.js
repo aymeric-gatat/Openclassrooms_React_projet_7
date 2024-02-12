@@ -6,6 +6,10 @@ const searchBar = document.getElementById("search"),
   searchBtn = document.getElementById("btn-search");
 const filterBtns = document.querySelectorAll(".filter-select");
 const cardContainer = document.querySelector(".cards-container");
+//
+const arrayFilterIngredient = [],
+  arrayFilterAppliance = [],
+  arrayFilterUstensil = [];
 //** ==================== FUNCTION ==================== **//
 
 // Get all ingredients
@@ -51,9 +55,25 @@ function getUstensiel(recipes) {
 // Filter systeme
 function filteredRecipes(recipes, input) {
   const newRecipes = [];
+  const array = [];
   for (let i = 0; i < recipes.length; i++) {
     const recette = recipes[i];
     if (recette.name.toLowerCase().includes(input) || (recette.description.toLowerCase().includes(input) && !newRecipes.includes(recette))) {
+      array.push(recette);
+      const newIngredients = getIngredient(array);
+      for (let ingredient = 0; ingredient < newIngredients.length; ingredient++) {
+        const element = array[ingredient];
+        if (arrayFilterIngredient.lenght > 0 && arrayFilterIngredient.includes(element)) {
+          console.log(element);
+        } else {
+          console.log(arrayFilterIngredient);
+        }
+      }
+
+      //
+      const newApplicance = getApplicance(array);
+      const newUtensils = getUstensiel(array);
+
       newRecipes.push(recette);
     }
   }
@@ -150,22 +170,45 @@ function createCard(recipes) {
     const totalDisplay = document.querySelector(".total");
     totalDisplay.innerText = `0 recette`;
   }
+  for (let j = 0; j < filterBtns.length; j++) {
+    const btn = filterBtns[j];
+    addFilter(recipes, btn, j);
+  }
 }
 // Generate Filter
-function createFilter(filter) {}
+function createFilter(filter, input) {
+  const ul = input.closest("div.filter").querySelector(".filter-research ul");
+  ul.replaceChildren();
+  for (let i = 0; i < filter.length; i++) {
+    const element = filter[i];
+    const li = document.createElement("li");
+    li.innerText = element;
+    //
+    li.addEventListener("click", () => {
+      li.classList.toggle("select");
+      if (li.className == "select") {
+        console.log("select", li.innerText);
+      } else {
+        console.log("no select", li.innerText);
+      }
+    });
+    //
+    ul.appendChild(li);
+  }
+}
 function addFilter(filter, input, index) {
   switch (index) {
     case (index = 0):
       const newIngredients = getIngredient(filter);
-      console.log(newIngredients);
+      createFilter(newIngredients, input);
       break;
     case (index = 1):
       const newApplicance = getApplicance(filter);
-      console.log(newApplicance);
+      createFilter(newApplicance, input);
       break;
     case (index = 2):
       const newUtensils = getUstensiel(filter);
-      console.log(newUtensils);
+      createFilter(newUtensils, input);
       break;
     default:
       console.error("Filter generation problem");
@@ -174,7 +217,6 @@ function addFilter(filter, input, index) {
 }
 
 //** ==================== EVENT ==================== **//
-createCard(recipes);
 
 searchBar.addEventListener("input", () => {
   if (searchBar.value.length >= 3) {
@@ -196,6 +238,7 @@ searchBtn.addEventListener("click", () => {
   }
 });
 
+createCard(recipes);
 //** Ouverture des filtres **//
 for (let i = 0; i < filterBtns.length; i++) {
   const btn = filterBtns[i];
@@ -213,5 +256,4 @@ for (let i = 0; i < filterBtns.length; i++) {
       filterIsOpen = true;
     }
   });
-  addFilter(recipes, btn, i);
 }

@@ -348,7 +348,7 @@ function addTag(filter, element) {
 }
 
 function removeTag(filter, element) {
-  const test = element.split(" ").join("");
+  const test = element.split(" ").join("").replace(/\W+/g, "-");
   const li = document.querySelector(`.${test}`);
   li.remove();
   removeElementFromArray(array, element.toLowerCase());

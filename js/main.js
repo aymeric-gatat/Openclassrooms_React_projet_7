@@ -7,7 +7,7 @@ const searchBar = document.getElementById("search"),
 const filterBtns = document.querySelectorAll(".filter-select");
 const cardContainer = document.querySelector(".cards-container");
 //
-const arrayFilterIngredient = [],
+var arrayFilterIngredient = [],
   arrayFilterAppliance = [],
   arrayFilterUstensil = [];
 //** ==================== FUNCTION ==================== **//
@@ -60,17 +60,16 @@ function filteredRecipes(recipes, input) {
     const recette = recipes[i];
     if (recette.name.toLowerCase().includes(input) || (recette.description.toLowerCase().includes(input) && !newRecipes.includes(recette))) {
       array.push(recette);
-      const newIngredients = getIngredient(array);
-      for (let ingredient = 0; ingredient < newIngredients.length; ingredient++) {
-        const element = array[ingredient];
-        if (arrayFilterIngredient.lenght > 0 && arrayFilterIngredient.includes(element)) {
-          console.log(element);
-        } else {
-          console.log(arrayFilterIngredient);
-        }
-      }
-
       //
+      if (arrayFilterIngredient) {
+        const ingredients = recette.ingredients;
+        /*for (let j = 0; j < ingredients.length; j++) {
+          const element = array[j].ingredient;
+          console.log(element);
+        }*/
+        // Faire un fonction a coté
+      }
+      const newIngredients = getIngredient(array);
       const newApplicance = getApplicance(array);
       const newUtensils = getUstensiel(array);
 
@@ -176,7 +175,7 @@ function createCard(recipes) {
   }
 }
 // Generate Filter
-function createFilter(filter, input) {
+function createFilter(filter, input, array) {
   const ul = input.closest("div.filter").querySelector(".filter-research ul");
   ul.replaceChildren();
   for (let i = 0; i < filter.length; i++) {
@@ -187,10 +186,16 @@ function createFilter(filter, input) {
     li.addEventListener("click", () => {
       li.classList.toggle("select");
       if (li.className == "select") {
-        console.log("select", li.innerText);
+        const icon = document.createElement("img");
+        icon.src = "../assets/cross-icon.png";
+        li.appendChild(icon);
+        array.push(li.innerText.toLowerCase());
       } else {
-        console.log("no select", li.innerText);
+        const icon = li.querySelector("img");
+        icon.remove();
+        array = supprimerElement(array, li.innerText.toLowerCase());
       }
+      createTag(array, li);
     });
     //
     ul.appendChild(li);
@@ -200,22 +205,67 @@ function addFilter(filter, input, index) {
   switch (index) {
     case (index = 0):
       const newIngredients = getIngredient(filter);
-      createFilter(newIngredients, input);
+      createFilter(newIngredients, input, arrayFilterIngredient);
+      console.log(arrayFilterIngredient);
       break;
     case (index = 1):
       const newApplicance = getApplicance(filter);
-      createFilter(newApplicance, input);
+      createFilter(newApplicance, input, arrayFilterAppliance);
       break;
     case (index = 2):
       const newUtensils = getUstensiel(filter);
-      createFilter(newUtensils, input);
+      createFilter(newUtensils, input, arrayFilterUstensil);
       break;
     default:
       console.error("Filter generation problem");
       break;
   }
 }
+// Generate Tag
+function createTag(array, filter) {
+  const ul = document.querySelector(".tag-container");
+  ul.replaceChildren();
+  for (let i = 0; i < array.length; i++) {
+    const element = array[i];
+    const li = document.createElement("li");
+    li.innerText = capitalizeFirstLetter(element);
+    li.className = "tag";
+    const icon = document.createElement("img");
+    icon.src = "../assets/cross-icon-nobg.png";
+    li.appendChild(icon);
+    icon.addEventListener("click", () => {
+      removeTag(ul, li, filter);
+    });
+    ul.appendChild(li);
+  }
+}
 
+// Remove Tag
+function removeTag(list, element, filter) {
+  const test = list.querySelectorAll("li");
+  for (let i = 0; i < test.length; i++) {
+    const elementTest = test[i].innerText.toLowerCase();
+    if (elementTest == element.innerText.toLowerCase()) {
+      console.log(elementTest);
+    }
+  }
+  //if (element.innerText.toLowerCase() === filter.innerText.toLowerCase()) console.log(list);
+}
+// Supprimer d'un tableau
+function supprimerElement(tableau, elementASupprimer) {
+  var nouvelTableau = [];
+  for (var i = 0; i < tableau.length; i++) {
+    if (tableau[i] !== elementASupprimer) {
+      nouvelTableau.push(tableau[i]);
+    }
+  }
+  return nouvelTableau;
+}
+
+// Mettre la première lettre en majuscule
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
 //** ==================== EVENT ==================== **//
 
 searchBar.addEventListener("input", () => {

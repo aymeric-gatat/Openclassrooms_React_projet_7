@@ -7,6 +7,11 @@ const ingredientFilterContainer = document.querySelector(".filter-ingredient"),
   ustensilFilterContainer = document.querySelector(".filter-ustensil");
 
 const filterContainer = [ingredientFilterContainer, applianceFilterContainer, ustensilFilterContainer];
+const filters = {
+  ingredients: [],
+  appliances: [],
+  ustensils: [],
+};
 
 const array = [];
 
@@ -168,7 +173,7 @@ function advancedSearch(keyword, filters) {
     }
   }
 
-  const filteredRecipes = filterRecipesByTags(matchingRecipes, array);
+  const filteredRecipes = filterRecipesByTags(matchingRecipes, filters);
 
   matchingRecipes = mergeSort(filteredRecipes);
 
@@ -185,11 +190,7 @@ function getSearchKeyword() {
 
 function handleSearch() {
   const keyword = getSearchKeyword();
-  const filters = {
-    ingredients: [],
-    appliances: [],
-    ustensils: [],
-  };
+
   const matchingRecipes = advancedSearch(keyword, filters);
   generateCards(matchingRecipes);
   addFilter(matchingRecipes);
@@ -197,11 +198,9 @@ function handleSearch() {
 
 //
 
-document.getElementById("search").addEventListener("keypress", function (event) {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    handleSearch();
-  }
+document.getElementById("search").addEventListener("input", function (event) {
+  event.preventDefault();
+  handleSearch();
 });
 document.getElementById("btn-search").addEventListener("click", function (event) {
   event.preventDefault();
@@ -230,9 +229,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+const btns = document.querySelectorAll(".filter ");
+for (let i = 0; i < btns.length; i++) {
+  const btn = btns[i];
+  const input = btn.querySelector("input[type=search]");
+  const container = btn.querySelector(".filter-research ul");
+  for (let j = 0; j < container.children.length; j++) {
+    const element = container.children[j];
+    console.log(element);
+  }
+}
+
 //
 
-function createFilter(array, container) {
+function createFilter(array, container, category) {
   let ul = container.querySelector("ul");
 
   if (ul) {
@@ -243,13 +253,13 @@ function createFilter(array, container) {
       li.innerText = element.toLowerCase();
       li.addEventListener("click", () => {
         if (li.className !== "select") {
-          addTag(li, element.toLowerCase());
+          addTag(li, element.toLowerCase(), category);
           li.classList.add("select");
           const icon = document.createElement("img");
           icon.src = "../assets/cross-icon.png";
           li.appendChild(icon);
         } else {
-          removeTag(li, element.toLowerCase());
+          removeTag(li, element.toLowerCase(), category);
         }
       });
       ul.appendChild(li);
@@ -313,45 +323,69 @@ function addFilter(recipes) {
     }
   }
 
-  createFilter(ingredients, ingredientFilterContainer);
-  createFilter(appliances, applianceFilterContainer);
-  createFilter(ustensils, ustensilFilterContainer);
+  createFilter(ingredients, ingredientFilterContainer, "ingredient");
+  createFilter(appliances, applianceFilterContainer, "appliance");
+  createFilter(ustensils, ustensilFilterContainer, "ustensil");
 
   return { ingredients, appliances, ustensils };
 }
 
 //
 
-function createTag(element, filter) {
+function createTag(element, filter, category) {
   const li = document.createElement("li");
   li.innerText = capitalizeFirstLetter(element);
   const icon = document.createElement("img");
   icon.src = "../assets/cross-icon-nobg.png";
   li.classList = element.toLowerCase().split(" ").join("").replace(/\W+/g, "-");
   icon.addEventListener("click", () => {
-    removeTag(filter, element);
+    removeTag(filter, element, category);
   });
   li.appendChild(icon);
   return li;
 }
 
-function addTag(filter, element) {
+function addTag(filter, element, category) {
   const tags = document.querySelector(".tag-container");
   if (!array.includes(element.toLowerCase())) {
-    const li = createTag(element, filter);
+    const li = createTag(element, filter, category);
     tags.appendChild(li);
-    for (let i = 0; i < tags.children.length; i++) {
-      const child = tags.children[i];
-      array.push(child.innerText.toLowerCase());
+    switch (category) {
+      case "ingredient":
+        filters.ingredients.push(element.toLowerCase());
+        break;
+      case "appliance":
+        filters.appliances.push(element.toLowerCase());
+        break;
+      case "ustensil":
+        filters.ustensils.push(element.toLowerCase());
+        break;
+
+      default:
+        break;
     }
   }
 }
 
-function removeTag(filter, element) {
+function removeTag(filter, element, category) {
   const test = element.split(" ").join("").replace(/\W+/g, "-");
   const li = document.querySelector(`.${test}`);
   li.remove();
-  removeElementFromArray(array, element.toLowerCase());
+  switch (category) {
+    case "ingredient":
+      removeElementFromArray(filters.ingredients, element.toLowerCase());
+      break;
+    case "appliance":
+      removeElementFromArray(filters.appliances, element.toLowerCase());
+      break;
+    case "ustensil":
+      removeElementFromArray(filters.ustensils, element.toLowerCase());
+      break;
+
+    default:
+      break;
+  }
+
   filter.classList.remove("select");
   if (filter.querySelector("img").remove());
 }
@@ -374,64 +408,48 @@ function removeElementFromArray(arr, element) {
   }
 }
 
-function filterRecipesByTags(recipes, tags) {
-  const filteredRecipes = [];
+function filterRecipesByTags(recipes, filters) {
+  let filteredRecipes = [];
 
   for (let i = 0; i < recipes.length; i++) {
     const recipe = recipes[i];
-    let foundAllTags = true;
+    let ingredientMatch = true;
+    let applianceMatch = true;
+    let ustensilMatch = true;
 
-    for (let j = 0; j < tags.length; j++) {
-      const tag = tags[j];
-      let tagFound = false;
-      for (let k = 0; k < recipe.ingredients.length; k++) {
-        if (recipe.ingredients[k].ingredient.toLowerCase() === tag.toLowerCase()) {
-          tagFound = true;
+    // Vérifier les ingrédients
+    if (filters.ingredients.length > 0) {
+      for (let j = 0; j < filters.ingredients.length; j++) {
+        const filter = filters.ingredients[j].toLowerCase();
+        const hasIngredient = recipe.ingredients.some((ingredientObj) => ingredientObj.ingredient.toLowerCase().includes(filter));
+        if (!hasIngredient) {
+          ingredientMatch = false;
           break;
         }
       }
-      if (!tagFound) {
-        foundAllTags = false;
-        break;
+    }
+
+    // Vérifier l'appareil
+    if (filters.appliances.length > 0) {
+      const appliance = recipe.appliance.toLowerCase();
+      if (!filters.appliances.includes(appliance)) {
+        applianceMatch = false;
       }
     }
 
-    if (foundAllTags) {
-      filteredRecipes.push(recipe);
-      continue;
-    }
-
-    foundAllTags = true;
-    for (let j = 0; j < tags.length; j++) {
-      const tag = tags[j];
-      if (recipe.appliance.toLowerCase() !== tag.toLowerCase()) {
-        foundAllTags = false;
-        break;
-      }
-    }
-
-    if (foundAllTags) {
-      filteredRecipes.push(recipe);
-      continue;
-    }
-
-    foundAllTags = true;
-    for (let j = 0; j < tags.length; j++) {
-      const tag = tags[j];
-      let tagFound = false;
-      for (let k = 0; k < recipe.ustensils.length; k++) {
-        if (recipe.ustensils[k].toLowerCase() === tag.toLowerCase()) {
-          tagFound = true;
+    // Vérifier les ustensiles
+    if (filters.ustensils.length > 0) {
+      for (let j = 0; j < filters.ustensils.length; j++) {
+        const filterUstensils = filters.ustensils[j].toLowerCase();
+        if (!recipe.ustensils.some((ustensil) => ustensil.toLowerCase().includes(filterUstensils))) {
+          ustensilMatch = false;
           break;
         }
       }
-      if (!tagFound) {
-        foundAllTags = false;
-        break;
-      }
     }
 
-    if (foundAllTags) {
+    // Ajouter la recette aux résultats filtrés si tous les critères sont satisfaits
+    if (ingredientMatch && applianceMatch && ustensilMatch) {
       filteredRecipes.push(recipe);
     }
   }

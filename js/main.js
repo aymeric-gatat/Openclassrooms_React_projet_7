@@ -157,51 +157,79 @@ function advancedSearch(keyword, filters) {
     let recipe = recipes[i];
     let nameMatch = false;
     let descriptionMatch = false;
+    let ingredientMatch = false;
 
     const recipeName = recipe.name.toLowerCase();
-    if (recipeName.indexOf(keyword) !== -1) {
+    if (containsSubstring(recipeName, keyword)) {
       nameMatch = true;
     }
 
     const recipeDescription = recipe.description.toLowerCase();
-    if (recipeDescription.indexOf(keyword) !== -1) {
+    if (containsSubstring(recipeDescription, keyword)) {
       descriptionMatch = true;
     }
 
-    if (nameMatch || descriptionMatch) {
+    const recipeIngredients = recipe.ingredients;
+    for (let j = 0; j < recipeIngredients.length; j++) {
+      const recipeIngredient = recipeIngredients[j].ingredient;
+      if (containsSubstring(recipeIngredient, keyword)) {
+        ingredientMatch = true;
+        break;
+      }
+    }
+
+    if (nameMatch || descriptionMatch || ingredientMatch) {
       matchingRecipes.push(recipe);
     }
   }
 
-  const filteredRecipes = filterRecipesByTags(matchingRecipes, filters);
-
-  matchingRecipes = mergeSort(filteredRecipes);
-
   return matchingRecipes;
 }
 
-function getSearchKeyword() {
-  if (document.getElementById("search").value.length >= 3) {
-    return document.getElementById("search").value;
-  } else {
-    return "";
+function containsSubstring(str, substr) {
+  for (let i = 0; i <= str.length - substr.length; i++) {
+    let match = true;
+    for (let j = 0; j < substr.length; j++) {
+      if (str[i + j] !== substr[j]) {
+        match = false;
+        break;
+      }
+    }
+    if (match) {
+      return true;
+    }
   }
+  return false;
+}
+
+function getSearchKeyword() {
+  return document.getElementById("search").value;
 }
 
 function handleSearch() {
   const keyword = getSearchKeyword();
 
   const matchingRecipes = advancedSearch(keyword, filters);
-  generateCards(matchingRecipes);
-  addFilter(matchingRecipes);
+  if (matchingRecipes.length == 0) {
+    const noResult = document.createElement("p");
+    noResult.innerText = `Aucune recette ne contient "${keyword}"`;
+    const cardContainer = document.querySelector(".cards-container");
+    generateCards(matchingRecipes);
+    addFilter(matchingRecipes);
+    cardContainer.appendChild(noResult);
+  } else {
+    generateCards(matchingRecipes);
+    addFilter(matchingRecipes);
+  }
 }
-
-//
 
 document.getElementById("search").addEventListener("input", function (event) {
   event.preventDefault();
-  handleSearch();
+  if (document.getElementById("search").value.length >= 3) {
+    handleSearch();
+  }
 });
+
 document.getElementById("btn-search").addEventListener("click", function (event) {
   event.preventDefault();
   handleSearch();

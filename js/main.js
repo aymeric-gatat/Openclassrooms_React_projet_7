@@ -2,7 +2,7 @@ import { recipes } from "../data/recipes.js";
 //import { generateCards } from "./main.js";
 
 // querySelector
-const cardsContainer = document.querySelector("main section .cards-container");
+const cardsContainer = document.querySelector("main .cards-container");
 const tagContainer = document.querySelector(".tag-container");
 
 // Sélecteur pour l'input de recherche

@@ -125,6 +125,22 @@ function generateCards(data) {
 }
 
 function generateList(array, container, newArray) {
+  const searchInput = container.closest(".filter").querySelector("input");
+  searchInput.addEventListener("input", () => {
+    container.replaceChildren();
+    array.forEach((element) => {
+      if (element.includes(searchInput.value)) {
+        const li = document.createElement("li");
+        li.textContent = element;
+        li.className = `filtre-element`;
+        li.addEventListener("click", () => {
+          addFilter(li, newArray, container);
+        });
+        removeTag(newArray);
+        container.appendChild(li);
+      }
+    });
+  });
   container.replaceChildren();
   array.forEach((element) => {
     const li = document.createElement("li");

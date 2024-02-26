@@ -171,7 +171,13 @@ function removeDuplicates(array) {
 // Filtre
 function filterRecipes(input, recipesArray) {
   return recipesArray.filter(
-    (recipe) => recipe.name.toLowerCase().includes(input.toLowerCase()) || recipe.description.toLowerCase().includes(input.toLowerCase())
+    (recipe) =>
+      recipe.name.toLowerCase().includes(input.toLowerCase()) ||
+      recipe.description
+        .toLowerCase()
+        .includes(
+          input.toLowerCase() || recipe.ingredients.some((recipeIngredient) => recipeIngredient.ingredient.toLowerCase().includes(ingredient))
+        )
   );
 }
 

@@ -244,9 +244,8 @@ for (let i = 0; i < btns.length; i++) {
 
 function createFilter(array, container, category) {
   let ul = container.querySelector("ul");
-
+  const search = container.querySelector(".searchbar input");
   if (ul) {
-    ul.replaceChildren();
     for (let i = 0; i < array.length; i++) {
       const element = array[i];
       const li = document.createElement("li");
@@ -284,6 +283,51 @@ function createFilter(array, container, category) {
     }
     container.appendChild(ul);
   }
+  search.addEventListener("input", () => {
+    ul.replaceChildren();
+    if (ul) {
+      for (let i = 0; i < array.length; i++) {
+        const element = array[i];
+        if (element.includes(search.value)) {
+          const li = document.createElement("li");
+          li.innerText = element.toLowerCase();
+          li.addEventListener("click", () => {
+            if (li.className !== "select") {
+              addTag(li, element.toLowerCase(), category);
+              li.classList.add("select");
+              const icon = document.createElement("img");
+              icon.src = "../assets/cross-icon.png";
+              li.appendChild(icon);
+            } else {
+              removeTag(li, element.toLowerCase(), category);
+            }
+          });
+          ul.appendChild(li);
+        }
+      }
+    } else {
+      ul = document.createElement("ul");
+      for (let i = 0; i < array.length; i++) {
+        const element = array[i];
+        if (element.includes(search.value)) {
+          const li = document.createElement("li");
+          li.innerText = element.toLowerCase();
+          li.addEventListener("click", () => {
+            if (li.className == "select") {
+              const icon = document.createElement("img");
+              icon.src = "../assets/icon-cross.png";
+              li.appendChild(icon);
+            } else {
+              const icon = li.querySelector("img");
+              icon.remove();
+            }
+          });
+          ul.appendChild(li);
+        }
+      }
+      container.appendChild(ul);
+    }
+  });
 }
 
 function addFilter(recipes) {

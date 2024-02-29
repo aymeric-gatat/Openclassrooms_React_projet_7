@@ -126,31 +126,35 @@ function generateCards(data) {
 
 function generateList(array, container, newArray) {
   const searchInput = container.closest(".filter").querySelector("input");
-  searchInput.addEventListener("input", () => {
-    container.replaceChildren();
-    array.forEach((element) => {
-      if (element.includes(searchInput.value)) {
-        const li = document.createElement("li");
-        li.textContent = element;
-        li.className = `filtre-element`;
-        li.addEventListener("click", () => {
-          addFilter(li, newArray, container);
-        });
-        removeTag(newArray);
-        container.appendChild(li);
-      }
-    });
-  });
-  container.replaceChildren();
-  array.forEach((element) => {
+
+  function createListItem(element) {
     const li = document.createElement("li");
     li.textContent = element;
     li.className = `filtre-element`;
     li.addEventListener("click", () => {
       addFilter(li, newArray, container);
     });
+    return li;
+  }
+
+  function filterList(value) {
+    container.replaceChildren();
+    array.forEach((element) => {
+      if (element.includes(value)) {
+        const li = createListItem(element);
+        container.appendChild(li);
+      }
+    });
     removeTag(newArray);
+  }
+
+  array.forEach((element) => {
+    const li = createListItem(element);
     container.appendChild(li);
+  });
+
+  searchInput.addEventListener("input", () => {
+    filterList(searchInput.value);
   });
 }
 
@@ -177,7 +181,10 @@ function filterRecipes(input, recipesArray) {
         .toLowerCase()
         .includes(
           input.toLowerCase() || recipe.ingredients.some((recipeIngredient) => recipeIngredient.ingredient.toLowerCase().includes(ingredient))
-        )
+        ) ||
+      recipe.ingredients.some((ingredient) => {
+        ingredient.ingredient.toLowerCase();
+      })
   );
 }
 
